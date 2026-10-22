@@ -68,12 +68,17 @@ async function tick(env, probar = false) {
   const hoy = new Date(ahora - 4 * 3600e3).toISOString().slice(0, 10);   // fecha en Caracas
   const dias = (await (await fetch(DATOS)).json()).dias;
   const t = await token(env);
-  for (const d of dias.filter((d) => d.fecha === hoy))
+  const ayer = new Date(ahora - 28 * 3600e3).toISOString().slice(0, 10);
+  let ocupado = false;   // lo de ayer que quedo sin subir sale de a una por tick, y solo si no hay nada de hoy en curso
+  for (const d of dias.filter((d) => d.fecha === hoy || d.fecha === ayer))
     for (const pz of d.piezas) {
+      const atrasada = d.fecha === ayer;
+      if (atrasada && ocupado) continue;
       if (!TIPOS.includes(pz.tipo) || pz.falta || !pz.archivos?.length) continue;
-      const clave = `p:${d.fecha}/${pz.id}`, hora = toca(d.fecha, pz.hora);
+      const clave = `p:${d.fecha}/${pz.id}`, hora = atrasada ? ahora - 1 : toca(d.fecha, pz.hora);
       let s = JSON.parse((await env.KV.get(clave)) || '{}');
-      if (s.etapa === 'publicado' || s.etapa === 'error' || (!probar && (ahora < hora - ANTES || ahora > hora + VENTANA))) continue;
+      if (s.etapa === 'publicado' || s.etapa === 'error' || (!probar && !atrasada && (ahora < hora - ANTES || ahora > hora + VENTANA))) continue;
+      ocupado = true;
       try { s = await avanzar(t, pz, s, ahora, hora, probar); log.push(`${clave}: ${s.etapa}`); }
       catch (e) { s.intentos = (s.intentos || 0) + 1; s.error = String(e).slice(0, 300); if (s.intentos >= 3) s.etapa = 'error'; log.push(`${clave}: FALLO ${s.error}`); }
       await env.KV.put(clave, JSON.stringify(s), { expirationTtl: 1209600 });
