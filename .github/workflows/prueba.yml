@@ -1,7 +1,0 @@
-name: prueba
-on: workflow_dispatch
-jobs:
-  hola:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo hola
