@@ -5,16 +5,23 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
-concurrency: publicar
+concurrency:
+  group: publicar
 jobs:
   publicar:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
-      - run: python publicar.py
-        env: { IG_TOKEN: '${{ secrets.IG_TOKEN }}' }
-      - run: |
-          git config user.name "publicador"; git config user.email "publicador@users.noreply.github.com"
-          git add publicado.json && git diff --cached --quiet || (git commit -m "publicado" && git push)
+        with:
+          python-version: '3.12'
+      - name: Publicar
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+        run: python publicar.py
+      - name: Guardar estado
+        run: |
+          git config user.name "publicador"
+          git config user.email "publicador@users.noreply.github.com"
+          git add publicado.json
+          git diff --cached --quiet || (git commit -m "publicado" && git push)
