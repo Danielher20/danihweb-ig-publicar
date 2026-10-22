@@ -1,0 +1,13 @@
+name = "danihweb-ig-publicar"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[triggers]
+crons = ["*/15 * * * *"]
+
+[vars]
+IG_EXPIRA = "2026-12-13"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "2a4ce985891d4f09917948e3ea28b4d3"
