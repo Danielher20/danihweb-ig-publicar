@@ -70,7 +70,7 @@ async function tick(env, probar = false) {
   const t = await token(env);
   const ayer = new Date(ahora - 28 * 3600e3).toISOString().slice(0, 10);
   let ocupado = false;   // lo de ayer que quedo sin subir sale de a una por tick, y solo si no hay nada de hoy en curso
-  for (const d of dias.filter((d) => d.fecha === hoy || d.fecha === ayer))
+  for (const d of dias.filter((d) => d.fecha >= ayer))
     for (const pz of d.piezas) {
       const atrasada = d.fecha === ayer;
       if (atrasada && ocupado) continue;
