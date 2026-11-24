@@ -88,7 +88,12 @@ async function tick(env, probar = false) {
 }
 
 export default {
-  async scheduled(_, env, ctx) { ctx.waitUntil(tick(env).then((l) => console.log(l.join('\n')))); },
+  async scheduled(_, env, ctx) {
+    ctx.waitUntil(tick(env).then((l) => console.log(l.join('\n'))));
+    ctx.waitUntil(env.AUDITOR.fetch('https://danihweb-estado.prospectos-web.workers.dev/?ejecutar_auditoria=1', {
+      method: 'POST', headers: { 'X-Clave': env.AUDITOR_CLAVE },
+    }).then(async r => { if (!r.ok) throw new Error(`Auditoría: HTTP ${r.status}`); return r.json(); }).then(console.log));
+  },
   // GET /?clave=...&probar=1  -> prepara la proxima pieza sin publicar; sin probar = corre un tick normal
   async fetch(req, env) {
     const u = new URL(req.url);
